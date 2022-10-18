@@ -52,9 +52,10 @@ rd[,(date_vars):=lapply(.SD,function(x){
                               }
   
   }),.SDcols=date_vars]
-rd[,(date_vars):=lapply(.SD,function(x){as.Date(ifelse(x<as.Date("1900-01-01") | x>=as.Date("2023-01-01"),NA,x),origin="1970-01-01")}),.SDcols=date_vars]
-# lapply(rd[,.SD,.SDcols=date_vars],function(x){summary(x,na.rm=T)})
 
+rd[,(date_vars):=lapply(.SD,function(x){as.Date(ifelse(x<as.Date("1900-01-01") | x>=as.Date("2023-01-01"),NA,x),origin="1970-01-01")}),.SDcols=date_vars]
+
+# lapply(rd[,.SD,.SDcols=date_vars],function(x){summary(x,na.rm=T)})
 
 factor_vars<-c("GENDER","EDUCAT","FMDM",
                "HXHT","HXHTTR","HXSTR","HXSTRTR","HXHEART","HXHEARTTR","HXDM","HXDMTR","HXHL","HXHLTR",
@@ -133,8 +134,15 @@ if(dataset=="ED"){
      .SDcols=date_vars]
   #age
   rd$AGEPRV<-ifelse(rd$AGEPRV>120 | rd$AGEPRV<0,NA,rd$AGEPRV)
+}else if(dataset=="PD"){
+  rd$PDPERIODYR <- ifelse(rd$PDPERIODYR>100, NA, rd$PDPERIODYR)
+  
+  rd$KMRSCORE <- ifelse(rd$KMRSCORE>30, NA, rd$KMRSCORE)
+  
+  rd$BMI <- ifelse(rd$BMI>100, NA, rd$BMI)
+}else if(dataset=="LD"){
+  
 }
-
 
 output<-createWorkbook()
 #Multivariate---------------------------------------------------
@@ -439,13 +447,14 @@ if(dataset=="ED"){
 }else if(dataset=="PD"){
   tb1_vars<-c("AGE","GENDER","EDUYR","EDUCAT","SMOKE3","HXHTDX","HXDMDX","HXHLDX","HXHEARTDX","HXSTRDX",
               "BMI","LBAPOE","FMDM","FMPD","MUPHYSTAGE","PDONSAGE","PDPERIODYR","PDLVDPYR","PDLVDPDOSE",
-              "FCCDRT","FCCDLT","FCPTRT","FCRTLT",
+              "FCCDRT","FCCDLT","FCPTRT","FCPTLT",
               "KMRSCORE","CDRGLOBAL","CDRSB","EQSCORE","MOCAKSCORE",
               "NMSSSCORE","PDQ39SCORE","MASCORE","KESSSCORE","RBDSCORE","PDSS2SCORE","CBISCORE","CBICVSCORE")
   tb1_factor_vars<-tb1_vars[tb1_vars %in% factor_vars]
   tb1_vars<-tb1_vars[tb1_vars %in% names(rd)]
   rdtb1<-rd[,.SD,.SDcols=c(tb1_vars,"DXMAIN","HYSTAGE")]
   label.rd.tb1<-label.rd[variable %in% c(tb1_vars,"DXMAIN","HYSTAGE")]
+  
   
   tb1<-CreateTableOne(data = rdtb1,
                       vars = tb1_vars,
